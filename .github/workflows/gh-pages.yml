@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ] # Se ejecutará cuando hagas push a 'main' o 'master'
+
+# Otorga permisos al GitHub token para desplegar en la rama gh-pages
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛎️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # Usa la rama estable de Flutter
+
+      - name: 📦 Install dependencies
+        run: flutter pub get
+
+      - name: 🏗️ Build Web App
+        # Se genera la build apuntando directamente al subdirectorio en GitHub Pages
+        run: flutter build web --release --base-href "/crm-enterprise-demo/"
+
+      - name: 🚀 Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+          force_orphan: true # Mantiene limpio el historial de la rama gh-pages
